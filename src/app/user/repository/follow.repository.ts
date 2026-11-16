@@ -18,7 +18,7 @@ class FollowRepository extends AbstractRepository<IFollow> {
     return docs.map((d) => d.following);
   }
 
-  // اقتراحات: ناس بيتابعهم اللي أنا بتابعهم (mutual connections)
+  
   mutualSuggestions(followingIds: Types.ObjectId[], exclude: Types.ObjectId[], limit: number) {
     return this.model.aggregate([
       { $match: { follower: { $in: followingIds }, status: FollowStatus.ACCEPTED, following: { $nin: exclude } } },

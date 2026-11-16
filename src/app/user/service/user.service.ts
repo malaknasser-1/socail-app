@@ -20,14 +20,13 @@ class UserService {
     return user;
   }
 
-  // يقدر يشوف التفاصيل لو: بروفايله / عام / أنا متابعه ومقبول
   private async canView(viewerId: string, target: { id: string; isPrivate: boolean }) {
     if (!target.isPrivate || viewerId === target.id) return true;
     const rel = await followRepository.findRelation(viewerId, target.id);
     return rel?.status === FollowStatus.ACCEPTED;
   }
 
-  // ---------- Profile ----------
+ 
   async getMe(userId: string) {
     const user = await this.getUserOrFail(userId);
     return {
@@ -61,11 +60,11 @@ class UserService {
     return { id: user.id, name: user.name, bio: user.bio, avatar: user.avatar };
   }
 
-  // ---------- Settings / Privacy ----------
+  
   async updateSettings(userId: string, isPrivate: boolean) {
     const user = await userRepository.findOneAndUpdate({ _id: userId }, { $set: { isPrivate } });
     if (!user) throw new AppError("User not found", 404);
-    // لو بقى Public نقبل كل الطلبات المعلقة
+    
     if (!isPrivate) {
       await followRepository.updateMany(
         { following: userId, status: FollowStatus.PENDING },
@@ -75,7 +74,6 @@ class UserService {
     return { isPrivate: user.isPrivate };
   }
 
-  // ---------- Follow ----------
   async follow(me: string, targetId: string) {
     if (me === targetId) throw new AppError("You cannot follow yourself", 400);
     const target = await this.getUserOrFail(targetId);
@@ -145,7 +143,6 @@ class UserService {
     return docs.map((d) => d.following);
   }
 
-  // ---------- Search & Suggestions ----------
   async search(me: string, q: string, page: number, limit: number) {
     const safe = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     return userRepository

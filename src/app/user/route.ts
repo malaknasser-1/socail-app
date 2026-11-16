@@ -7,7 +7,7 @@ import { idParamDto, settingsDto, updateProfileDto } from "./dto/user.dto";
 const userRouter = Router();
 userRouter.use(authenticate);
 
-// الثابت قبل /:id
+
 userRouter.get("/me", userController.getMe);
 userRouter.patch("/me", validate(updateProfileDto), userController.updateMe);
 userRouter.patch("/me/settings", validate(settingsDto), userController.updateSettings);

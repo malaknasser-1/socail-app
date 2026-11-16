@@ -51,7 +51,7 @@ class AuthService {
     return { accessToken: signAccessToken(userId), refreshToken: signRefreshToken(userId, jti) };
   }
 
-  // ---------- registration ----------
+ 
   async register(dto: RegisterDto) {
     if (await userRepository.findByEmail(dto.email)) throw new AppError("Email already in use", 409);
     const user = await userRepository.create({
@@ -76,7 +76,7 @@ class AuthService {
     return { message: "If the account exists, a new code was sent." };
   }
 
-  // ---------- login / tokens ----------
+  
   async login(dto: LoginDto) {
     const user = await userRepository.findByEmail(dto.email, true);
     if (!user || !user.password || !(await comparePassword(dto.password, user.password))) {
@@ -96,13 +96,13 @@ class AuthService {
     const stored = await refreshTokenRepository.findOne({ jti: payload.jti });
     if (!stored) throw new AppError("Invalid refresh token", 401);
 
-    // توكن اتستخدم قبل كده => احتمال سرقة => نلغي كل جلسات اليوزر
+
     if (stored.revokedAt) {
       await refreshTokenRepository.revokeAllForUser(String(payload.sub));
       throw new AppError("Token reuse detected. Please login again.", 401);
     }
 
-    stored.revokedAt = new Date(); // rotation
+    stored.revokedAt = new Date(); 
     await stored.save();
     return this.issueTokens(String(payload.sub));
   }
@@ -112,7 +112,7 @@ class AuthService {
       const payload = verifyRefreshToken(token);
       await refreshTokenRepository.revokeByJti(String(payload.jti));
     } catch {
-      /* توكن باظ؟ مفيش حاجة نلغيها */
+     
     }
     return { message: "Logged out" };
   }
@@ -122,7 +122,7 @@ class AuthService {
     return { message: "Logged out from all devices" };
   }
 
-  // ---------- password reset ----------
+  
   async forgotPassword(email: string) {
     const user = await userRepository.findByEmail(email);
     if (user && user.provider === AuthProvider.LOCAL) await this.sendOtp(email, OtpPurpose.RESET_PASSWORD);
@@ -140,7 +140,6 @@ class AuthService {
     return { message: "Password updated. Please login again." };
   }
 
-  // ---------- Google OAuth ----------
   async googleLogin(idToken: string) {
     let payload;
     try {
@@ -162,7 +161,7 @@ class AuthService {
         avatar: payload.picture,
       });
     } else if (!user.googleId) {
-      user.googleId = payload.sub; // ربط الحساب الموجود
+      user.googleId = payload.sub; 
       user.isEmailVerified = true;
       await user.save();
     }
